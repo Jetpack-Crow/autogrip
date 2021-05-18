@@ -22,11 +22,16 @@ should be positioned. Hands should now be fists.
 
 If you select another mesh object, then select the armature again so armature is active, you'll
 have options for "Grip Target R" and "Grip Target L." These actually set the targets of the 
-constraints to that other mesh you have selected, so the hand can grab on properly.
+constraints to that other mesh you have selected, so the hand can grab on properly. You can
+also set a different target later without having to run the initial setup again.
 
 I'm going to add more options to fine-tune the "collision" results, but most of the time, the
 control bones will have all you need. Scaling them affects the offset of the constraints and
-can help with a bit of clipping
+can help with a bit of clipping. 
+
+If you're sick of it and you want your old armature back, "Reset Hand R" and "Reset Hand L" 
+clean up after themselves pretty well, deleting everything this script did and leaving the 
+original rig untouched. 
 """
 
 bl_info = {
