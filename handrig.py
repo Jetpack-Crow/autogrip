@@ -307,10 +307,10 @@ class fingerchain:
         rig_choice = obj.global_rig_choice
         
         if rig_choice == 'MHX':
-            self.control_layer = 29
-            self.project_layer = 30
+            self.control_layer = 23
+            self.project_layer = 24
         elif rig_choice == 'RFY':
-            self.control_layer = 22
+            self.control_layer = 6
             self.project_layer = 23
         elif rig_choice == 'ARP':
             self.control_layer = 16
@@ -469,19 +469,19 @@ def assemble_hand(handbone):
         "ORG-thumb.01.R": ["thumb.02.R", "thumb.03.R"]
     }
     
-    autogrip_dictionary = {
+    autorig_dictionary = {
         'c_index1_base.l': ['c_index1.l', 'c_index2.l', 'c_index3.l'],        
         'c_middle1_base.l': ['c_middle1.l', 'c_middle2.l', 'c_middle3.l'],        
         'c_ring1_base.l': ['c_ring1.l', 'c_ring2.l', 'c_ring3.l'],
         'c_pinky1_base.l': ['c_pinky1.l', 'c_pinky2.l', 'c_pinky3.l'],        
-        'c_thumb1_base.l': ['c_thumb1.l', 'c_thumb2.l', 'c_thumb3.l'],
+        'c_thumb1.l': ['c_thumb2.l', 'c_thumb3.l'],
 
         
         'c_index1_base.r': ['c_index1.r', 'c_index2.r', 'c_index3.r'],
         'c_middle1_base.r': ['c_middle1.r', 'c_middle2.r', 'c_middle3.r'],    
         'c_ring1_base.r': ['c_ring1.r', 'c_ring2.r', 'c_ring3.r'],        
         'c_pinky1_base.r': ['c_pinky1.r', 'c_pinky2.r', 'c_pinky3.r'],
-        'c_thumb1_base.r': ['c_thumb1.r', 'c_thumb2.r', 'c_thumb3.r'],
+        'c_thumb1.r': ['c_thumb2.r', 'c_thumb3.r'],
     }
     
     directions_postfixes = ['.L', '.R']
@@ -493,33 +493,23 @@ def assemble_hand(handbone):
     
     print("Assembling hand off of " + handbone.name + ", with rig choice " + rig_choice)
     
-    # This puts together the list of palm roots only
-    if rig_choice == 'MHX':
-        print('choice = mhx')
-        
-        direction = handbone.name[-1]
-        
-        for key in makehuman_dictionary:
-            if key[-1] == direction:
-                print("# " + key)
-                fingerroots.append(obj.pose.bones[key])
-                
-    elif rig_choice == 'RFY':
-        print('choice: rigify')
-        
-        direction = handbone.name[-1]
-        
-        for key in rigify_dictionary:
-            if key[-1] == direction:
-                print("# " + key)
-                fingerroots.append(obj.pose.bones[key])
+    chosen_dictionary = {}
     
-    elif rig_choice == 'ARP':
-        print('choice: auto rig pro')
-        for j in handbone.children_recursive:
-            #print(j.name)
-            if ('_base' in j.name) and ('ontrol' not in j.name):
-                fingerroots.append(j)
+    if rig_choice == 'MHX':
+        chosen_dictionary = makehuman_dictionary
+    elif rig_choice == "RFY":
+        chosen_dictionary = rigify_dictionary
+    elif rig_choice == "ARP":
+        chosen_dictionary = autorig_dictionary
+        
+    print("choice = " + rig_choice)
+    direction = handbone.name[-1]
+    
+    
+    for key in chosen_dictionary:
+        if key[-1] == direction:
+            print("# " + key)
+            fingerroots.append(obj.pose.bones[key])
     
     print("fingerroots list:")
     for k in fingerroots:
@@ -531,77 +521,53 @@ def assemble_hand(handbone):
     
     # Now that I've got all 3 options using a dictionary, I should probably
     # merge more of these into one function
-        
+    
     for loop_palm in fingerroots:
-        #print(loop_palm.name, end=' ')
         print()
         bonechain = []
         
-        if rig_choice == 'MHX':
-            
-            nameslist = makehuman_dictionary[loop_palm.name]
-            
-            for j in nameslist:
-                print(j, end=', ')
-                bonechain.append(obj.pose.bones[j])
-            
-            fingername = bonechain[0].basename
-            
-            if bonechain[0].name == "thumb.02.L":
-                print("\nCREATING LEFT THUMB")
-                newfinger = fingerchain(bonechain, 'z', fingername, 0.52)
-            elif bonechain[0].name ==  "thumb.02.R":
-                print("\nCREATING RIGHT THUMB")
-                newfinger = fingerchain(bonechain, 'z', fingername, -0.52)
-            else: 
-                newfinger = fingerchain(bonechain, 'z', fingername)
-                
-            fingerlist.append(newfinger)
+        nameslist = chosen_dictionary[loop_palm.name]
         
-        
-        elif rig_choice == 'RFY':
+        for j in nameslist:
+            print(j, end=', ')
+            bonechain.append(obj.pose.bones[j])
             
-            nameslist = rigify_dictionary[loop_palm.name]
-            
-            for j in nameslist:
-                print(j, end=', ')
-                bonechain.append(obj.pose.bones[j])
-            
-            fingername = bonechain[0].basename
-            
-            if bonechain[0].name == "thumb.02.L":
-                print("\nCREATING LEFT THUMB")
-                newfinger = fingerchain(bonechain, 'z', fingername, -0.7)
-            elif bonechain[0].name ==  "thumb.02.R":
-                print("\nCREATING RIGHT THUMB")
-                newfinger = fingerchain(bonechain, 'z', fingername, 0.7)
-            else: 
-                newfinger = fingerchain(bonechain, 'z', fingername)
-            
-            # I thought the thumb needed an offset, but maybe it doesn't?
-            
-            fingerlist.append(newfinger)
-            
-                
-        elif rig_choice == 'ARP':
-            print("building chain off " + loop_palm.name)
-            
-            fingerstrings = autogrip_dictionary[loop_palm.name]
-            
-            for i in fingerstrings:
-                print(i)
-                bonechain.append(obj.pose.bones[i])
-            # So now I've created a bonechain for a single finger
-            
+        if rig_choice == 'ARP':
             rootname = loop_palm.name
-            
             fingername = rootname.split('_')[1]
             fingername = fingername[:-1]
+        else:
+            fingername = bonechain[0].basename
             
-            newfinger = fingerchain(bonechain, '-z', fingername)
-            
-            fingerlist.append(newfinger)
-    
+        
+        if 'thumb' in fingername:
+            if rig_choice == 'MHX':
+                if bonechain[0].name == "thumb.02.L":
+                    print("\nCREATING LEFT THUMB")
+                    newfinger = fingerchain(bonechain, 'z', fingername, 0.52)
+                elif bonechain[0].name ==  "thumb.02.R":
+                    print("\nCREATING RIGHT THUMB")
+                    newfinger = fingerchain(bonechain, 'z', fingername, -0.52)
+            elif rig_choice == 'RFY':
+                if bonechain[0].name == "thumb.02.L":
+                    print("\nCREATING LEFT THUMB")
+                    newfinger = fingerchain(bonechain, 'z', fingername, -0.7)
+                elif bonechain[0].name ==  "thumb.02.R":
+                    print("\nCREATING RIGHT THUMB")
+                    newfinger = fingerchain(bonechain, 'z', fingername, 0.7)
+            elif rig_choice == 'ARP':
+                print("\nCREATING AUTORIG THUMB")
+                newfinger = fingerchain(bonechain, '-z', fingername)
+                
+        else:
+            print("creating other finger")
+            if rig_choice == 'ARP':
+                newfinger = fingerchain(bonechain, '-z', fingername)
+            else:
+                newfinger = fingerchain(bonechain, 'z', fingername)
+        
+        fingerlist.append(newfinger)
+        
     return fingerlist
 
 def control_drivers(finger):
@@ -661,9 +627,10 @@ def find_hand_root(direction):
     )
     
     rig_choice = obj.global_rig_choice
-    # TODO: work in more elegant exception handling here, so it'll try 
+    # I want to work in more elegant exception handling here, so it'll try 
     # the other option, then go to 
     # best guess if it can't find the hand root for either case.
+    # but not high priority.
     try:
         if rig_choice == 'MHX':
             if direction.lower() == 'l':
