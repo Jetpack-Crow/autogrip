@@ -509,11 +509,7 @@ def assemble_hand(handbone):
     for key in chosen_dictionary:
         if key[-1] == direction:
             print("# " + key)
-            fingerroots.append(obj.pose.bones[key])
-    
-    print("fingerroots list:")
-    for k in fingerroots:
-        print(k.name, end=', ')        
+            fingerroots.append(obj.pose.bones[key])     
             
     # And then THIS assembles the fingers off each palm. I've got a dictionary set up 
     # that tells it the whole list of fingers it should be looking for for 
@@ -543,17 +539,17 @@ def assemble_hand(handbone):
         if 'thumb' in fingername:
             if rig_choice == 'MHX':
                 if bonechain[0].name == "thumb.02.L":
-                    print("\nCREATING LEFT THUMB")
+                    print("\nCREATING LEFT MAKEHUMAN THUMB")
                     newfinger = fingerchain(bonechain, 'z', fingername, 0.52)
                 elif bonechain[0].name ==  "thumb.02.R":
-                    print("\nCREATING RIGHT THUMB")
+                    print("\nCREATING RIGHT MAKEHUMAN THUMB")
                     newfinger = fingerchain(bonechain, 'z', fingername, -0.52)
             elif rig_choice == 'RFY':
                 if bonechain[0].name == "thumb.02.L":
-                    print("\nCREATING LEFT THUMB")
+                    print("\nCREATING LEFT RIGIFY THUMB")
                     newfinger = fingerchain(bonechain, 'z', fingername, -0.7)
                 elif bonechain[0].name ==  "thumb.02.R":
-                    print("\nCREATING RIGHT THUMB")
+                    print("\nCREATING RIGHT RIGIFY THUMB")
                     newfinger = fingerchain(bonechain, 'z', fingername, 0.7)
             elif rig_choice == 'ARP':
                 print("\nCREATING AUTORIG THUMB")
@@ -958,6 +954,18 @@ class QuickPose(bpy.types.Operator):
     bl_label = "Quick Pose"
     bl_options = {'REGISTER', 'UNDO'}
     
+    rig_choice = bpy.props.EnumProperty(
+        name="Rig selection",
+        description="Select an option",
+        
+        items = [ 
+            ('MHX', "MHX", "MakeHuman Exchange"),
+            ('RFY', "Rigify", "Modular armature from the Rigify add-on"),
+            ('ARP', "AutoRig Pro", "Auto rig pro"),
+            ('GUESS', "Best Guess", "Any armature this doesn't explicitly support. Unreliable"),
+        ]
+    )
+    
     # This here is also depending on rig choice! Be wary
     
     def execute(self, context):
@@ -970,6 +978,8 @@ class QuickPose(bpy.types.Operator):
         obj = bpy.context.active_object
         activeArmature = bpy.context.active_object.data
         
+        rig_choice = obj.global_rig_choice
+        
         if (prefix + 'hand_L') in activeArmature:
             
             print("left hand set up")
@@ -979,16 +989,29 @@ class QuickPose(bpy.types.Operator):
                 if 'control' in bone.name:
                     bone.rotation_euler[0] = pi/2 
                     continue
-                if 'thumb.01' in bone.name:
-                    if bone.name[-1] == 'L':
-                        # Set this to only affect axes that are not locked!
+                if rig_choice == 'MHX':
+                    if 'thumb.01' in bone.name:
+                            # Set this to only affect axes that are not locked!
                         bone.rotation_euler[0] = 0.445
                         bone.rotation_euler[1] = 0.803
                         bone.rotation_euler[2] = 0.140
-                    else: 
-                        bone.rotation_euler[0] = 0.445
-                        bone.rotation_euler[1] = -0.803
-                        bone.rotation_euler[2] = -0.140
+                  
+                    #else: 
+                     #   bone.rotation_euler[0] = 0.445
+                      #  bone.rotation_euler[1] = -0.803
+                       # bone.rotation_euler[2] = -0.140
+                    """ This'll be the right thumb"""
+                                  
+                elif rig_choice == 'RFY':
+                    if 'ORG-thumb.01' in bone.name:
+                        print("quickpose rigify thumb")
+                        bone.rotation_quaternion[0] = 0.85
+                        bone.rotation_quaternion[1] = -0.114
+                        bone.rotation_quaternion[2] = 0.36
+                        bone.rotation_quaternion[3] = 0.36
+                        
+                elif rig_choice == 'ARP':
+                    print("quickpose autorig pro thumb")
                     
         else:
             print('left hand not set up')
@@ -1002,6 +1025,25 @@ class QuickPose(bpy.types.Operator):
             for bone in righthandroot.children_recursive:
                 if 'control' in bone.name:
                     bone.rotation_euler[0] = pi/2
+                    continue
+                
+                if rig_choice == 'MHX':
+                    if 'thumb.01' in bone.name:
+                            # Set this to only affect axes that are not locked!
+                        bone.rotation_euler[0] = 0.445
+                        bone.rotation_euler[1] = -0.803
+                        bone.rotation_euler[2] = -0.140
+                                  
+                elif rig_choice == 'RFY':
+                    if 'ORG-thumb.01' in bone.name:
+                        print("quickpose rigify thumb")
+                        bone.rotation_quaternion[0] = 0.85
+                        bone.rotation_quaternion[1] = -0.114
+                        bone.rotation_quaternion[2] = -0.36
+                        bone.rotation_quaternion[3] = -0.36
+                        
+                elif rig_choice == 'ARP':
+                    print("quickpose autorig pro thumb")
         else:
             print('right hand not set up')
             
