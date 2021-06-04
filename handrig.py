@@ -1,3 +1,40 @@
+"""INSTRUCTIONS
+Run this script, then in object mode, all the buttons you need are in a tab in the N-panel
+called "AutoGrippy."
+
+With the armature you want to use selected, pick which type of rig it is from the drop-down
+
+Click "setup" to assemble both hands, or just "Setup Right" or "Setup Left" if you don't need both
+
+It'll take about 20-30 seconds, during which a lot of my debug garbage will print in the 
+system console. Let that finish, and you'll have a tangle of small needley bones sticking off 
+the hands, but the pose won't change yet. (If you don't seem to have the small needley bones,
+check the tooltip for the rig type you chose and make sure you can actually see the layer where
+it left them.)
+
+The influence of the contraints depends on the rotation of the control bones - those are the
+longer ones that stick out from the knuckles. If they're at rest, pointing out from the back 
+of the hand, it's 0%. If they're rotated 90 degrees on the local X axis, so they jab forward 
+over the fingers like Wolverine claws, it's 100%. 
+
+"Quick Pose" puts all of those to 90 degrees, and takes a guess at where the opposable thumbs
+should be positioned. Hands should now be fists.
+
+If you select another mesh object, then select the armature again so armature is active, you'll
+have options for "Grip Target R" and "Grip Target L." These actually set the targets of the 
+constraints to that other mesh you have selected, so the hand can grab on properly. You can
+also set a different target later without having to run the initial setup again.
+
+I'm going to add more options to fine-tune the "collision" results, but most of the time, the
+control bones will have all you need. Scaling them affects the offset of the constraints and
+can help with a bit of clipping. 
+
+If you're sick of it and you want your old armature back, "Reset Hand R" and "Reset Hand L" 
+clean up after themselves pretty well, deleting everything this script did and leaving the 
+original rig untouched. 
+"""
+
+
 bl_info = {
     "name": "AutoGrippy",
     "blender": (2, 92, 0),
