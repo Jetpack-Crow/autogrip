@@ -39,6 +39,7 @@ bl_info = {
     "name": "AutoGrippy",
     "blender": (2, 92, 0),
     "category": "Object",
+    "description": "Automatically poses hands to grab props."
 }
 
 import bpy
@@ -1086,6 +1087,23 @@ class QuickPose(bpy.types.Operator):
             
         return {'FINISHED'}
         
+class github_link(bpy.types.Operator):
+    
+    """Check out the github for updates or to report any issues you find"""
+    bl_idname = "object.autogrip_discussion_link"
+    bl_label = "Github Link"
+    
+    def execute(self, context):
+        github_open()
+        return {'FINISHED'}
+        
+def github_open():
+    import webbrowser
+    import imp
+    
+    webbrowser.open("https://github.com/Jetpack-Crow/autogrip")
+    return
+
         
 class handrig_custom_panel(bpy.types.Panel):
     """Creates a sub tab in the N-panel"""
@@ -1142,10 +1160,14 @@ class handrig_custom_panel(bpy.types.Panel):
                 row.operator(TargetLeft.bl_idname)
         else:
             row = layout.row()
-            row.label(text = "No armature active.")                  
+            row.label(text = "No armature active.")   
+            
+        row = layout.row()
+        row.operator(github_link.bl_idname)
+                       
         
 classes = [AutoGrippySetup, AutoGrippyLeft, AutoGrippyRight, TargetRight, TargetLeft,
-    ResetHandLeft, ResetHandRight, QuickPose, handrig_custom_panel]        
+    ResetHandLeft, ResetHandRight, QuickPose, handrig_custom_panel, github_link]        
         
 def register():
     
