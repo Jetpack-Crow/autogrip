@@ -1124,7 +1124,9 @@ class guess_rig_type(bpy.types.Operator):
         dictionaries_list = [makehuman_dictionary, rigify_dictionary, autorig_dictionary]
         type_names_list = ['MHX', 'RFY', 'ARP']
         
-        rig_type = ""
+        rig_type = None
+        
+        message = "Rig doesn't match precoded types."
         
         for type in dictionaries_list:
             match = True
@@ -1133,21 +1135,24 @@ class guess_rig_type(bpy.types.Operator):
             # But it's what I got for now. TODO
             
             dictionary_index = dictionaries_list.index(type)
+            
             rig_type = type_names_list[dictionary_index]
             
             for key in type:
                 if bone_in_armature(key):
                     continue
                 else:
-                    print(key + " not found, armature cannot be " + rig_type)
+                    print("Armature cannot be " + rig_type)
                     match = False
                     break
             if match:
-                print("Rig type is likely " + rig_type)
+                
                 obj.global_rig_choice = rig_type
+                
+                message = "Rig type: " + rig_type
                 break
         
-        self.report({'INFO'}, "Test")
+        self.report({'INFO'}, message)
     
         return {'FINISHED'}
 
@@ -1245,7 +1250,7 @@ def register():
             ('RFY', "Rigify", "Modular armature from the Rigify add-on.\n" + 
             "Puts control bones on layer 6 for Fingers (Detail)\n" + 
             "Puts projectors on layer 23"),
-            ('ARP', "AutoRig Pro", "Auto rig pro add-on.\n" + 
+            ('ARP', "Auto-Rig Pro", "Armature from the Auto-Rig Pro add-on.\n" + 
             "Puts control bones and projectors on layer 16")
             #('GUESS', "Best Guess", "This will do its best to reconstruct some hands from\n" + 
             #"any given armature. Not implemented yet"),
