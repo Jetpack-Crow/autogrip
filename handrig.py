@@ -1,3 +1,5 @@
+#This is the new version where I added rig guess
+
 """INSTRUCTIONS
 Run this script, then in object mode, all the buttons you need are in a tab in the N-panel
 called "AutoGrippy."
@@ -49,6 +51,53 @@ import numpy as np
 import math
 
 prefix = "AutoGrip_"
+
+
+makehuman_dictionary = {
+        
+    "palm_index.L": ["f_index.01.L", "f_index.02.L", "f_index.03.L"],
+    "palm_middle.L": ["f_middle.01.L", "f_middle.02.L", "f_middle.03.L"],
+    "palm_ring.L": ["f_ring.01.L", "f_ring.02.L", "f_ring.03.L"],
+    "palm_pinky.L": ["f_pinky.01.L", "f_pinky.02.L", "f_pinky.03.L"],
+        
+    "palm_index.R": ["f_index.01.R", "f_index.02.R", "f_index.03.R"],
+    "palm_middle.R": ["f_middle.01.R", "f_middle.02.R", "f_middle.03.R"],
+    "palm_ring.R": ["f_ring.01.R", "f_ring.02.R", "f_ring.03.R"],
+    "palm_pinky.R": ["f_pinky.01.R", "f_pinky.02.R", "f_pinky.03.R"],
+        
+        
+    "thumb.01.L": ["thumb.02.L", "thumb.03.L"],
+    "thumb.01.R": ["thumb.02.R", "thumb.03.R"]
+}
+    
+rigify_dictionary = {
+    "ORG-palm.01.L": ["f_index.01.L", "f_index.02.L", "f_index.03.L"],
+    "ORG-palm.02.L": ["f_middle.01.L", "f_middle.02.L", "f_middle.03.L"],
+    "ORG-palm.03.L": ["f_ring.01.L", "f_ring.02.L", "f_ring.03.L"],
+    "ORG-palm.04.L": ["f_pinky.01.L", "f_pinky.02.L", "f_pinky.03.L"],
+        
+    "ORG-palm.01.R": ["f_index.01.R", "f_index.02.R", "f_index.02.R"],
+    "ORG-palm.02.R": ["f_middle.01.R", "f_middle.02.R", "f_middle.02.R"],
+    "ORG-palm.03.R": ["f_ring.01.R", "f_ring.02.R", "f_ring.03.R"],
+    "ORG-palm.04.R": ["f_pinky.01.R", "f_pinky.02.R", "f_pinky.03.R"],
+        
+    "ORG-thumb.01.L": ["thumb.02.L", "thumb.03.L"],
+    "ORG-thumb.01.R": ["thumb.02.R", "thumb.03.R"]
+}
+    
+autorig_dictionary = {
+    'c_index1_base.l': ['c_index1.l', 'c_index2.l', 'c_index3.l'],        
+    'c_middle1_base.l': ['c_middle1.l', 'c_middle2.l', 'c_middle3.l'],        
+    'c_ring1_base.l': ['c_ring1.l', 'c_ring2.l', 'c_ring3.l'],
+    'c_pinky1_base.l': ['c_pinky1.l', 'c_pinky2.l', 'c_pinky3.l'],        
+    'c_thumb1.l': ['c_thumb2.l', 'c_thumb3.l'],
+        
+    'c_index1_base.r': ['c_index1.r', 'c_index2.r', 'c_index3.r'],
+    'c_middle1_base.r': ['c_middle1.r', 'c_middle2.r', 'c_middle3.r'],    
+    'c_ring1_base.r': ['c_ring1.r', 'c_ring2.r', 'c_ring3.r'],        
+    'c_pinky1_base.r': ['c_pinky1.r', 'c_pinky2.r', 'c_pinky3.r'],
+    'c_thumb1.r': ['c_thumb2.r', 'c_thumb3.r'],
+}
 
 class fingerchain:
     phalanges = []
@@ -394,6 +443,7 @@ def name_to_bone(key):
 def name_to_posebone(key):
     return obj.pose.bones[key]
     
+    
 def rotation_matrix(axis, theta):
     #This is from here https://stackoverflow.com/questions/6802577/rotation-of-3d-vector
     """
@@ -435,15 +485,15 @@ def addIK(posebone, target):
     elif type(posebone) == bpy.types.Object:
         newIK.target = target
 
-def create_single_shrinkwrap(posebone):
+def create_single_shrinkwrap(projectorbone):
     
-    # I need to change this not to use the target, so I can create all the constraints,
-    # add all the drivers to them, and then change targets only
+    # This adds the shrinkwrap constraints onto a pose bone, 
+    # which should be a projector
     
-    if type(posebone) is not bpy.types.PoseBone:
-        print("!!! " + posebone.name + " is not posebone")
+    if type(projectorbone) is not bpy.types.PoseBone:
+        print("!!! " + projectorbone.name + " is not pose bone")
         return
-    newProject = posebone.constraints.new("SHRINKWRAP")
+    newProject = projectorbone.constraints.new("SHRINKWRAP")
     newProject.shrinkwrap_type = "PROJECT"
     newProject.project_axis = "POS_Y"
     newProject.cull_face = "FRONT"    
@@ -451,7 +501,7 @@ def create_single_shrinkwrap(posebone):
     newProject.name = prefix + "shrinkwrap"
     
     #setting distance relative to bone length for the moment. Not perfect but it will do
-    newProject.distance = 0.15 * posebone.length 
+    newProject.distance = 0.15 * projectorbone.length 
         
 def assemble_hand(handbone):
     
@@ -474,57 +524,6 @@ def assemble_hand(handbone):
     )
     
     rig_choice = obj.global_rig_choice
-    
-    makehuman_dictionary = {
-        
-        "palm_index.L": ["f_index.01.L", "f_index.02.L", "f_index.03.L"],
-        "palm_middle.L": ["f_middle.01.L", "f_middle.02.L", "f_middle.03.L"],
-        "palm_ring.L": ["f_ring.01.L", "f_ring.02.L", "f_ring.03.L"],
-        "palm_pinky.L": ["f_pinky.01.L", "f_pinky.02.L", "f_pinky.03.L"],
-        
-        "palm_index.R": ["f_index.01.R", "f_index.02.R", "f_index.03.R"],
-        "palm_middle.R": ["f_middle.01.R", "f_middle.02.R", "f_middle.03.R"],
-        "palm_ring.R": ["f_ring.01.R", "f_ring.02.R", "f_ring.03.R"],
-        "palm_pinky.R": ["f_pinky.01.R", "f_pinky.02.R", "f_pinky.03.R"],
-        
-        
-        "thumb.01.L": ["thumb.02.L", "thumb.03.L"],
-        "thumb.01.R": ["thumb.02.R", "thumb.03.R"]
-    }
-    
-    rigify_dictionary = {
-        "ORG-palm.01.L": ["f_index.01.L", "f_index.02.L", "f_index.03.L"],
-        "ORG-palm.02.L": ["f_middle.01.L", "f_middle.02.L", "f_middle.03.L"],
-        "ORG-palm.03.L": ["f_ring.01.L", "f_ring.02.L", "f_ring.03.L"],
-        "ORG-palm.04.L": ["f_pinky.01.L", "f_pinky.02.L", "f_pinky.03.L"],
-        
-        "ORG-palm.01.R": ["f_index.01.R", "f_index.02.R", "f_index.02.R"],
-        "ORG-palm.02.R": ["f_middle.01.R", "f_middle.02.R", "f_middle.02.R"],
-        "ORG-palm.03.R": ["f_ring.01.R", "f_ring.02.R", "f_ring.03.R"],
-        "ORG-palm.04.R": ["f_pinky.01.R", "f_pinky.02.R", "f_pinky.03.R"],
-        
-        "ORG-thumb.01.L": ["thumb.02.L", "thumb.03.L"],
-        "ORG-thumb.01.R": ["thumb.02.R", "thumb.03.R"]
-    }
-    
-    autorig_dictionary = {
-        'c_index1_base.l': ['c_index1.l', 'c_index2.l', 'c_index3.l'],        
-        'c_middle1_base.l': ['c_middle1.l', 'c_middle2.l', 'c_middle3.l'],        
-        'c_ring1_base.l': ['c_ring1.l', 'c_ring2.l', 'c_ring3.l'],
-        'c_pinky1_base.l': ['c_pinky1.l', 'c_pinky2.l', 'c_pinky3.l'],        
-        'c_thumb1.l': ['c_thumb2.l', 'c_thumb3.l'],
-
-        
-        'c_index1_base.r': ['c_index1.r', 'c_index2.r', 'c_index3.r'],
-        'c_middle1_base.r': ['c_middle1.r', 'c_middle2.r', 'c_middle3.r'],    
-        'c_ring1_base.r': ['c_ring1.r', 'c_ring2.r', 'c_ring3.r'],        
-        'c_pinky1_base.r': ['c_pinky1.r', 'c_pinky2.r', 'c_pinky3.r'],
-        'c_thumb1.r': ['c_thumb2.r', 'c_thumb3.r'],
-    }
-    
-    directions_postfixes = ['.L', '.R']
-    
-    # Returns a list of fingers
     
     fingerlist = []
     fingerroots = []
@@ -578,10 +577,10 @@ def assemble_hand(handbone):
             if rig_choice == 'MHX':
                 if bonechain[0].name == "thumb.02.L":
                     print("\nCREATING LEFT MAKEHUMAN THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, 0.52)
+                    newfinger = fingerchain(bonechain, 'z', fingername, -0.8)
                 elif bonechain[0].name ==  "thumb.02.R":
                     print("\nCREATING RIGHT MAKEHUMAN THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, -0.52)
+                    newfinger = fingerchain(bonechain, 'z', fingername, 0.8)
             elif rig_choice == 'RFY':
                 if bonechain[0].name == "thumb.02.L":
                     print("\nCREATING LEFT RIGIFY THUMB")
@@ -661,10 +660,7 @@ def find_hand_root(direction):
     )
     
     rig_choice = obj.global_rig_choice
-    # I want to work in more elegant exception handling here, so it'll try 
-    # the other option, then go to 
-    # best guess if it can't find the hand root for either case.
-    # but not high priority.
+    
     try:
         if rig_choice == 'MHX':
             if direction.lower() == 'l':
@@ -682,8 +678,11 @@ def find_hand_root(direction):
             elif direction.lower() == 'l':
                 return obj.pose.bones['hand.l']
     except:
-        print("failed, couldn't find handbone")
-        print("Are you sure you're on the right armature type?")
+        # I'm trying to figure out how to report a more elegant error to the user if they're
+        # on the wrong rig, without them needing to have open a console view. This is
+        # not ideal but it'll take more research.
+        
+        raise RuntimeError("Couldn't find hand root. Are you sure you have the right rig type?")
 
 def setup_hand(targetroot):
     
@@ -694,13 +693,13 @@ def setup_hand(targetroot):
     # Needs to run control_drivers after add_shrinkwraps
     
     fingers_list = assemble_hand(targetroot)
-    
+         
     for finger in fingers_list:
-            finger.setup()
-            finger.damped_track_projectors()
-            finger.add_shrinkwraps()
-            control_drivers(finger)
-            finger.set_armature_layers()
+        finger.setup()
+        finger.damped_track_projectors()
+        finger.add_shrinkwraps()
+        control_drivers(finger)
+        finger.set_armature_layers()
 
 class AutoGrippySetup(bpy.types.Operator):
     """Set up AutoGrippy rig"""
@@ -836,8 +835,7 @@ class TargetLeft(bpy.types.Operator):
         
         for i in left_hand_list:
             i.reconstruct()
-            print("set target for left hand")
-            #i.add_shrinkwraps()
+            print("set target for left hand finger " + i.name)
             i.target_shrinkwraps(target)
         
         return {'FINISHED'}
@@ -872,8 +870,7 @@ class TargetRight(bpy.types.Operator):
         
         for i in right_hand_list:
             i.reconstruct()
-            print("set target for right hand")
-            #i.add_shrinkwraps()
+            print("set target for right hand finger " + i.name)
             i.target_shrinkwraps(target)
         
         return {'FINISHED'}
@@ -1028,17 +1025,16 @@ class QuickPose(bpy.types.Operator):
                     bone.rotation_euler[0] = pi/2 
                     continue
                 if rig_choice == 'MHX':
-                    if 'thumb.01' in bone.name:
+                    if 'thumb.01.L' in bone.name:
                             # Set this to only affect axes that are not locked!
-                        bone.rotation_euler[0] = 0.445
-                        bone.rotation_euler[1] = 0.803
-                        bone.rotation_euler[2] = 0.140
+                        bone.rotation_euler[0] = -0.52
+                        bone.rotation_euler[1] = 0.28
+                        bone.rotation_euler[2] = 0.32
                   
-                    #else: 
-                     #   bone.rotation_euler[0] = 0.445
-                      #  bone.rotation_euler[1] = -0.803
-                       # bone.rotation_euler[2] = -0.140
-                    """ This'll be the right thumb"""
+                    elif 'thumb.01.R' in bone.name: 
+                        bone.rotation_euler[0] = -0.52
+                        bone.rotation_euler[1] = -0.28
+                        bone.rotation_euler[2] = -0.32
                                   
                 elif rig_choice == 'RFY':
                     if 'ORG-thumb.01' in bone.name:
@@ -1089,23 +1085,74 @@ class QuickPose(bpy.types.Operator):
         
 class github_link(bpy.types.Operator):
     
-    """Check out the github for updates or to report any issues you find"""
+    """Check this out for updates or to report any issues you find"""
     bl_idname = "object.autogrip_discussion_link"
     bl_label = "Github Link"
     
     def execute(self, context):
-        github_open()
-        return {'FINISHED'}
         
-def github_open():
-    import webbrowser
-    import imp
+        import webbrowser
+        import imp
+        webbrowser.open("https://github.com/Jetpack-Crow/autogrip")  
+        
+        return {'FINISHED'}
     
-    webbrowser.open("https://github.com/Jetpack-Crow/autogrip")
-    return
+def bone_in_armature(key):
+    try:
+        print(obj.pose.bones[key].name, "found in armature")
+        return True
+    except:
+        print(key + " not found in armature")
+        return False
+
+class guess_rig_type(bpy.types.Operator):
+    """Check if rig is compatible with any of the precoded types."""
+    
+    bl_idname = "object.autogrippy_guess_rig"
+    bl_label = "Guess Rig Type"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def execute(self, context):
+        
+        scene = context.scene
+        global obj
+        obj = bpy.context.active_object
+        activeArmature = bpy.context.active_object.data
+        
+        print("guessing rig type for", obj.name)
+        
+        dictionaries_list = [makehuman_dictionary, rigify_dictionary, autorig_dictionary]
+        type_names_list = ['MHX', 'RFY', 'ARP']
+        
+        rig_type = ""
+        
+        for type in dictionaries_list:
+            match = True
+            
+            # There has to be a better way to get the corresponding name than this.
+            # But it's what I got for now. TODO
+            
+            dictionary_index = dictionaries_list.index(type)
+            rig_type = type_names_list[dictionary_index]
+            
+            for key in type:
+                if bone_in_armature(key):
+                    continue
+                else:
+                    print(key + " not found, armature cannot be " + rig_type)
+                    match = False
+                    break
+            if match:
+                print("Rig type is likely " + rig_type)
+                obj.global_rig_choice = rig_type
+                break
+        
+        self.report({'INFO'}, "Test")
+    
+        return {'FINISHED'}
 
         
-class handrig_custom_panel(bpy.types.Panel):
+class PANEL_PT_Autogrip(bpy.types.Panel):
     """Creates a sub tab in the N-panel"""
     bl_label = "AutoGrippy Tools"
     bl_space_type = "VIEW_3D"
@@ -1130,12 +1177,18 @@ class handrig_custom_panel(bpy.types.Panel):
         if there is a valid target to attach them to."""
         
         if type(activeArmature) is bpy.types.Armature:
+            
+            row = layout.row()
+            row.label(text="Active armature: {}".format(activeArmature.name))
+            
             row = layout.row()
             #row.label(text = "enum choice")
             row.prop(obj, "global_rig_choice")
             
             row = layout.row()
-            row.label(text="Active armature: {}".format(activeArmature.name))
+            row.operator(guess_rig_type.bl_idname)
+            
+            row = layout.row()
             
             row = layout.row()
             row.operator(AutoGrippySetup.bl_idname)
@@ -1167,9 +1220,14 @@ class handrig_custom_panel(bpy.types.Panel):
                        
         
 classes = [AutoGrippySetup, AutoGrippyLeft, AutoGrippyRight, TargetRight, TargetLeft,
-    ResetHandLeft, ResetHandRight, QuickPose, handrig_custom_panel, github_link]        
+    ResetHandLeft, ResetHandRight, QuickPose, PANEL_PT_Autogrip, github_link, guess_rig_type]        
         
 def register():
+    
+    # This just iterates over all the classes I defined and sets each one up, 
+    # then creates the global_rig_choice enum that I'm gonna need. A rough copy of that
+    # is also defined in each other function that needs it because "global" isn't as 
+    # elegant as you would think here.
     
     print('\n~~~~~~~~~~~~registering setup~~~~~~~~~~~~\n')
     
