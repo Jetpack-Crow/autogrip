@@ -1,39 +1,43 @@
-#This is the new version where I added rig guess
-
 """INSTRUCTIONS
-Run this script, then in object mode, all the buttons you need are in a tab in the N-panel
-called "AutoGrippy."
+Run "autogrip.py" in Blender's text editor or install it as an add-on through the preferences menu. 
+Once that's done, check object mode, and all the buttons you need are in a tab in the N-panel called 
+"AutoGrippy."
 
-With the armature you want to use selected, pick which type of rig it is from the drop-down
+With the armature you want to use selected, you can pick which type of rig it is from the drop-down.
+Formats supported so far are MakeHuman Exchange, Rigify, and Auto-Rig Pro. 
+
+If it's not a model you made and you're not 100% sure, you can use "Guess Rig Type" to quickly
+ compare its hand setup to the ones this program can handle.
 
 Click "setup" to assemble both hands, or just "Setup Right" or "Setup Left" if you don't need both
+(or your model doesn't have both).
 
-It'll take about 20-30 seconds, during which a lot of my debug garbage will print in the 
-system console. Let that finish, and you'll have a tangle of small needley bones sticking off 
-the hands, but the pose won't change yet. (If you don't seem to have the small needley bones,
-check the tooltip for the rig type you chose and make sure you can actually see the layer where
-it left them.)
+It'll take about 20-30 seconds, during which a lot of my debug notes will print in the system 
+console. Let that finish, and you'll have a tangle of small needley bones sticking off the hands, 
+but the pose won't change yet. (If you don't seem to have the small needley bones, check the 
+tooltip for the rig type you chose and make sure you can actually see the layer where it left them.)
 
-The influence of the contraints depends on the rotation of the control bones - those are the
-longer ones that stick out from the knuckles. If they're at rest, pointing out from the back 
-of the hand, it's 0%. If they're rotated 90 degrees on the local X axis, so they jab forward 
-over the fingers like Wolverine claws, it's 100%. 
+The influence of the contraints depends on the rotation of the control bones - those are the longer
+ones that stick out from the knuckles. If they're at rest, pointing out from the back of the hand, 
+it's 0%. If they're rotated 90 degrees on the local X axis, so they jab forward over the fingers 
+like Wolverine claws, it's 100%.
 
-"Quick Pose" puts all of those to 90 degrees, and takes a guess at where the opposable thumbs
-should be positioned. Hands should now be fists.
+"Quick Pose" puts all of those to 90 degrees, and takes a guess at where the opposable thumbs should 
+be positioned. The hands should now be fists, but the thumb positions often need a bit of manual 
+(hah) tweaking in pose mode.
 
-If you select another mesh object, then select the armature again so armature is active, you'll
+If you select another mesh object, then select the armature again so armature is active, you'll 
 have options for "Grip Target R" and "Grip Target L." These actually set the targets of the 
-constraints to that other mesh you have selected, so the hand can grab on properly. You can
-also set a different target later without having to run the initial setup again.
+constraints to that other mesh you have selected, so the hand can grab on properly. You can also 
+set a different target later without having to run the initial setup again.
 
-I'm going to add more options to fine-tune the "collision" results, but most of the time, the
-control bones will have all you need. Scaling them affects the offset of the constraints and
-can help with a bit of clipping. 
+I'm going to add more options to fine-tune the "collision" results, but most of the time, the 
+control bones will have all you need. Scaling them affects the offset of the shrinkwrap constraints
+ and can help with a bit of clipping.
 
-If you're sick of it and you want your old armature back, "Reset Hand R" and "Reset Hand L" 
-clean up after themselves pretty well, deleting everything this script did and leaving the 
-original rig untouched. 
+If you're sick of it and you want your old armature back, "Reset Hand R" and "Reset Hand L" clean up
+after themselves pretty well, deleting everything this script did and leaving the original rig
+untouched.
 """
 
 
@@ -1015,7 +1019,12 @@ class QuickPose(bpy.types.Operator):
         
         rig_choice = obj.global_rig_choice
         
-        if (prefix + 'hand_L') in activeArmature:
+        if ((prefix + 'hand_L') in activeArmature) and (activeArmature[(prefix + 'hand_L')]):
+            #if activeArmature[(prefix + 'hand_L')] == True:
+             #   print('hand actually set up')
+            
+            # I entirely forgot that this part was supposed to be just 
+            # doing the left hand.
             
             print("left hand set up")
             lefthandroot = find_hand_root('L')
@@ -1026,33 +1035,35 @@ class QuickPose(bpy.types.Operator):
                     continue
                 if rig_choice == 'MHX':
                     if 'thumb.01.L' in bone.name:
+                        
+                        print("quickpose mhx thumb LEFT")
                             # Set this to only affect axes that are not locked!
                         bone.rotation_euler[0] = -0.52
                         bone.rotation_euler[1] = 0.28
                         bone.rotation_euler[2] = 0.32
-                  
-                    elif 'thumb.01.R' in bone.name: 
-                        bone.rotation_euler[0] = -0.52
-                        bone.rotation_euler[1] = -0.28
-                        bone.rotation_euler[2] = -0.32
                                   
                 elif rig_choice == 'RFY':
                     if 'ORG-thumb.01' in bone.name:
-                        print("quickpose rigify thumb")
+                        print("quickpose rigify thumb LEFT")
                         bone.rotation_quaternion[0] = 0.85
                         bone.rotation_quaternion[1] = -0.114
                         bone.rotation_quaternion[2] = 0.36
                         bone.rotation_quaternion[3] = 0.36
                         
                 elif rig_choice == 'ARP':
-                    print("quickpose autorig pro thumb")
+                    if bone.name == 'c_thumb1_base.l':
+                        print("quickpose autorig pro thumb LEFT")
+                    
+                        bone.rotation_euler[0] = 1.62
+                        bone.rotation_euler[1] = 0
+                        bone.rotation_euler[2] = -0.3
                     
         else:
             print('left hand not set up')
             
             
-        if (prefix + 'hand_R') in activeArmature:
-
+        if ((prefix + 'hand_R') in activeArmature) and (activeArmature[(prefix + 'hand_R')] == True):
+        
             print('right hand set up')            
             righthandroot = find_hand_root('R')
             
@@ -1062,22 +1073,28 @@ class QuickPose(bpy.types.Operator):
                     continue
                 
                 if rig_choice == 'MHX':
-                    if 'thumb.01' in bone.name:
-                            # Set this to only affect axes that are not locked!
-                        bone.rotation_euler[0] = 0.445
-                        bone.rotation_euler[1] = -0.803
-                        bone.rotation_euler[2] = -0.140
+                    if 'thumb.01.R' in bone.name: 
+                        print("quickpose mhx thumb RIGHT")
+                        bone.rotation_euler[0] = -0.52
+                        bone.rotation_euler[1] = -0.28
+                        bone.rotation_euler[2] = -0.32
                                   
                 elif rig_choice == 'RFY':
                     if 'ORG-thumb.01' in bone.name:
-                        print("quickpose rigify thumb")
+                        print("quickpose rigify thumb RIGHT")
                         bone.rotation_quaternion[0] = 0.85
                         bone.rotation_quaternion[1] = -0.114
                         bone.rotation_quaternion[2] = -0.36
                         bone.rotation_quaternion[3] = -0.36
                         
                 elif rig_choice == 'ARP':
-                    print("quickpose autorig pro thumb")
+                    
+                    if bone.name == 'c_thumb1_base.r':
+                        print("quickpose autorig pro thumb RIGHT")
+                    
+                        bone.rotation_euler[0] = 1.62
+                        bone.rotation_euler[1] = -0
+                        bone.rotation_euler[2] = 0.3
         else:
             print('right hand not set up')
             
