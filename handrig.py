@@ -166,6 +166,13 @@ class fingerchain:
         
     def create_control(self):    
         # Creates control bone, does not rig up constraints for it
+        
+        # If it creates the control bones and tries to parent them to the hand when
+        # the model is in a pose, they end up offset. Still function correctly,
+        # but I'm putting it to rest position real quick to avoid that.
+        prev_position = activeArmature.pose_position
+        activeArmature.pose_position = 'REST'
+        
         print("Creating control bone for finger " + self.name)
         
         palmroot_tail_loc = self.palmroot.tail       
@@ -213,6 +220,7 @@ class fingerchain:
         control.tail = loc
         
         control.parent = name_to_editbone(self.palmroot.name)
+        
         control.use_deform = False
         
         control.align_roll(self.palmroot.y_axis)
@@ -222,6 +230,8 @@ class fingerchain:
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         
         self.control_bone = name_to_posebone(stringholder)
+        
+        activeArmature.pose_position = prev_position
         
     def create_projectors(self):    
         # Creates projectors, does not set up constraints
@@ -581,10 +591,10 @@ def assemble_hand(handbone):
             if rig_choice == 'MHX':
                 if bonechain[0].name == "thumb.02.L":
                     print("\nCREATING LEFT MAKEHUMAN THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, -0.8)
+                    newfinger = fingerchain(bonechain, 'z', fingername, 0.8)
                 elif bonechain[0].name ==  "thumb.02.R":
                     print("\nCREATING RIGHT MAKEHUMAN THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, 0.8)
+                    newfinger = fingerchain(bonechain, 'z', fingername, -0.8)
             elif rig_choice == 'RFY':
                 if bonechain[0].name == "thumb.02.L":
                     print("\nCREATING LEFT RIGIFY THUMB")
@@ -717,6 +727,8 @@ class AutoGrippySetup(bpy.types.Operator):
         scene = context.scene
         global obj 
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         print("skeleton is " + activeArmature.name)
             
@@ -761,7 +773,10 @@ class AutoGrippyLeft(bpy.types.Operator):
         scene = context.scene
         global obj 
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
+        
         print("skeleton is " + activeArmature.name)
         
         if (prefix + 'hand_L') in activeArmature:
@@ -793,6 +808,8 @@ class AutoGrippyRight(bpy.types.Operator):
         scene = context.scene
         global obj 
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         print("skeleton is " + activeArmature.name)
         
@@ -822,6 +839,8 @@ class TargetLeft(bpy.types.Operator):
         scene = context.scene
         global obj 
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         print("skeleton is " + activeArmature.name)
         
@@ -857,6 +876,8 @@ class TargetRight(bpy.types.Operator):
         scene = context.scene
         global obj 
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         print("skeleton is " + activeArmature.name)
         
@@ -885,6 +906,8 @@ def reset_hand(wristroot):
     scene = context.scene
     global obj 
     obj = bpy.context.active_object
+    
+    global activeArmature
     activeArmature = obj.data
     
     fingers_list = assemble_hand(wristroot)
@@ -950,6 +973,8 @@ class ResetHandLeft(bpy.types.Operator):
         scene = context.scene
         global obj 
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         
         lefthandroot  = find_hand_root('L')
@@ -974,6 +999,8 @@ class ResetHandRight(bpy.types.Operator):
         scene = context.scene
         global obj 
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         
         #righthandroot = obj.pose.bones['hand0.R']
@@ -1015,6 +1042,8 @@ class QuickPose(bpy.types.Operator):
         scene = context.scene
         global obj
         obj = bpy.context.active_object
+        
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         
         rig_choice = obj.global_rig_choice
@@ -1038,8 +1067,8 @@ class QuickPose(bpy.types.Operator):
                         
                         print("quickpose mhx thumb LEFT")
                             # Set this to only affect axes that are not locked!
-                        bone.rotation_euler[0] = -0.52
-                        bone.rotation_euler[1] = 0.28
+                        bone.rotation_euler[0] = 0.43
+                        bone.rotation_euler[1] = 0.27
                         bone.rotation_euler[2] = 0.32
                                   
                 elif rig_choice == 'RFY':
@@ -1075,9 +1104,9 @@ class QuickPose(bpy.types.Operator):
                 if rig_choice == 'MHX':
                     if 'thumb.01.R' in bone.name: 
                         print("quickpose mhx thumb RIGHT")
-                        bone.rotation_euler[0] = -0.52
-                        bone.rotation_euler[1] = -0.28
-                        bone.rotation_euler[2] = -0.32
+                        bone.rotation_euler[0] = 0.43
+                        bone.rotation_euler[1] = -0.27
+                        bone.rotation_euler[2] = -0.17
                                   
                 elif rig_choice == 'RFY':
                     if 'ORG-thumb.01' in bone.name:
@@ -1134,6 +1163,7 @@ class guess_rig_type(bpy.types.Operator):
         scene = context.scene
         global obj
         obj = bpy.context.active_object
+        global activeArmature
         activeArmature = bpy.context.active_object.data
         
         print("guessing rig type for", obj.name)
@@ -1183,8 +1213,10 @@ class PANEL_PT_Autogrip(bpy.types.Panel):
     bl_context = "objectmode"
     
     def draw(self, context):
+        global obj
         obj = context.active_object 
         
+        global activeArmature
         activeArmature = obj.data
         
         target = None
