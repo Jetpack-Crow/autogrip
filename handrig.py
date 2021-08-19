@@ -408,7 +408,12 @@ class fingerchain:
         rig_choice = obj.global_rig_choice
         
         if rig_choice == 'MHX':
-            self.control_layer = 23
+            if self.control_bone.name[-1] == 'R':
+                print("setting layer for RIGHT finger")
+                self.control_layer = 22
+            elif self.control_bone.name[-1] == 'L':
+                print("setting layer for LEFT finger")
+                self.control_layer = 6
             self.project_layer = 24
         elif rig_choice == 'RFY':
             self.control_layer = 6
