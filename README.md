@@ -1,6 +1,6 @@
 # Autogrip
 
-This is a helpful little tool for hand rigs that lets them automatically grab onto mesh props. 
+This is a helpful little tool for hand rigs that lets them automatically grab onto mesh props. So far the types of rig it works on are MakeHuman Exchange, Rigify, and Auto-Rig Pro, but I'm taking requests for other common rig types and I'm working on adding a "custom" option. 
 
 # Tutorial
 
