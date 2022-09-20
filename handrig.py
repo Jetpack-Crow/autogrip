@@ -43,7 +43,7 @@ untouched.
 
 bl_info = {
     "name": "AutoGrippy",
-    "blender": (2, 92, 0),
+    "blender": (3, 3, 0),
     "category": "Object",
     "description": "Automatically poses hands to grab props."
 }
@@ -54,6 +54,8 @@ import mathutils
 import numpy as np
 import math
 
+# I put this prefix on all the constraints and such I make with this add-on,
+# so that they're easy to locate and remove on a reset
 prefix = "AutoGrip_"
 
 
@@ -129,8 +131,9 @@ class fingerchain:
         
         self.projectors = []
     
-    def setup(self):    #Setup: Creates projectors, puts IK constraints between phalanges and
-                        #those projectors, and creates control bone
+    def setup(self):    # Setup: calls the functions to create projectors, 
+			# put IK constraints between phalanges and
+                        # those projectors, and create control bone
         print("Setting up finger " + self.name)
         self.create_projectors()    
         self.constrain_IK()
@@ -177,7 +180,7 @@ class fingerchain:
         
         palmroot_tail_loc = self.palmroot.tail       
         palmroot_name = self.palmroot.name
-        print("palmroot name is " + palmroot_name)
+        #print("palmroot name is " + palmroot_name)
         
         postfix = palmroot_name[-1]
         
@@ -210,8 +213,7 @@ class fingerchain:
             print("no valid control axis found")
             translation = (0.0, 0.0, 0.0)
             
-        # It may be worth repeating the vector math to apply finger offset to this, but it's
-        # largely irrelevant
+        # It may be worth repeating the vector math to apply finger offset to this
     
         translation.length = singlebone.length  
         
@@ -252,10 +254,12 @@ class fingerchain:
             namematch = name_to_editbone(posebone.name)
             editchain.append(namematch)
             
-        print("full editbones chain: ")
+        """
+	print("full editbones chain: ")
         for printbone in editchain[:]:
             print(printbone.name, end=' ')
         print()
+	"""
         
         #print("looping projector creation")
         for phalange in editchain[:]:
@@ -373,8 +377,9 @@ class fingerchain:
                 
     def clean_layers(self):
         
-        # Moves all the project bones and the control bone to designated layers. Currently not 
-        # implemented but probably still works
+        # Moves all the project bones and the control bone to designated layers.
+	# You'd expect this to take an input, but I defined that out in 
+	# set_armature_layers instead. May rearrange that for some clarity
         
         for joint in self.projectors:
             i = 0
@@ -401,7 +406,6 @@ class fingerchain:
                 ('MHX', "MHX", "MakeHuman Exchange"),
                 ('RFY', "Rigify", "Modular armature from the Rigify add-on"),
                 ('ARP', "AutoRig Pro", "Auto rig pro"),
-                ('GUESS', "Best Guess", "Any armature this doesn't explicitly support. Unreliable"),
             ]
         )
     
@@ -492,7 +496,7 @@ def addIK(posebone, target):
     #Hooks the designated posebone up with an IK constraint to the designated target,
     #with chain count set to 1 and iterations to 16 to keep down memory issues
     
-    print("adding IK to bone " + posebone.name)
+    #print("adding IK to bone " + posebone.name)
     newIK = posebone.constraints.new("IK")
     newIK.chain_count = 1
     newIK.iterations = 16
@@ -1057,9 +1061,6 @@ class QuickPose(bpy.types.Operator):
             #if activeArmature[(prefix + 'hand_L')] == True:
              #   print('hand actually set up')
             
-            # I entirely forgot that this part was supposed to be just 
-            # doing the left hand.
-            
             print("left hand set up")
             lefthandroot = find_hand_root('L')
             
@@ -1148,7 +1149,21 @@ class github_link(bpy.types.Operator):
         
         return {'FINISHED'}
     
-def bone_in_armature(key):
+class kofi_link(bpy.types.Operator):
+    
+    """Donate a dollar or two?"""
+    bl_idname = "object.kofi_link"
+    bl_label = "Tip Jar"
+    
+    def execute(self, context):
+        
+        import webbrowser
+        import imp
+        webbrowser.open("https://ko-fi.com/jetpackcrow")  
+        
+        return {'FINISHED'}
+    
+def bone_in_armature(key):  # This function is used only for rig guessing.
     try:
         print(obj.pose.bones[key].name, "found in armature")
         return True
@@ -1215,7 +1230,7 @@ class PANEL_PT_Autogrip(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "AutoGrippy"
-    bl_context = "objectmode"
+    #bl_context = "objectmode"
     
     def draw(self, context):
         global obj
@@ -1274,12 +1289,17 @@ class PANEL_PT_Autogrip(bpy.types.Panel):
             row = layout.row()
             row.label(text = "No armature active.")   
             
-        row = layout.row()
-        row.operator(github_link.bl_idname)
+            row = layout.row()
+            row.label(text="Links (Open in browser)")
+            
+            row = layout.row()
+            row.operator(github_link.bl_idname)
+            row.operator(kofi_link.bl_idname)
                        
         
 classes = [AutoGrippySetup, AutoGrippyLeft, AutoGrippyRight, TargetRight, TargetLeft,
-    ResetHandLeft, ResetHandRight, QuickPose, PANEL_PT_Autogrip, github_link, guess_rig_type]        
+    ResetHandLeft, ResetHandRight, QuickPose, PANEL_PT_Autogrip, github_link, guess_rig_type,
+    kofi_link]        
         
 def register():
     
