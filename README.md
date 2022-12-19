@@ -24,3 +24,8 @@ If you select another mesh object, then select the armature again so armature is
 I'm going to add more options to fine-tune the "collision" results, but most of the time, the control bones will have all you need. Scaling them affects the offset of the shrinkwrap constraints and can help with a bit of clipping.
 
 If you're sick of it and you want your old armature back, "Reset Hand R" and "Reset Hand L" clean up after themselves pretty well, deleting everything this script did and leaving the original rig untouched.
+
+
+https://user-images.githubusercontent.com/84341068/208527863-93669d1c-66f0-4e3d-a5e2-78c5ff099de9.mp4
+
+https://user-images.githubusercontent.com/84341068/208528078-01ded0e2-a567-4b24-b028-415d16b8c830.mp4
