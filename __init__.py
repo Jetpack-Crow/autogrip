@@ -5,8 +5,8 @@
 #    Addon info
 bl_info = {
     "name": "Autogrip",
-    "author": "Jetpack Crow, discord Jetpack Crow (they/them)#2281",
-    "version": (1, 0),
+    "author": "Jetpack Crow",
+    "version": (1, 2),
     "blender": (3, 4, 00),
     "location": "View3D > Extended Tools > AutoGrip",
     "description": "Automatically poses hand rigs",
