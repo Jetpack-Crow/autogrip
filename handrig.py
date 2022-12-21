@@ -1,7 +1,7 @@
 """INSTRUCTIONS
 Run "autogrip.py" in Blender's text editor or install it as an add-on through the preferences menu. 
 Once that's done, check object mode, and all the buttons you need are in a tab in the N-panel called 
-"AutoGrippy."
+"AutoGrip."
 
 With the armature you want to use selected, you can pick which type of rig it is from the drop-down.
 Formats supported so far are MakeHuman Exchange, Rigify, and Auto-Rig Pro. 
@@ -42,7 +42,7 @@ untouched.
 
 
 bl_info = {
-    "name": "AutoGrippy",
+    "name": "AutoGrip",
     "blender": (3, 3, 0),
     "category": "Object",
     "description": "Automatically poses hands to grab props."
@@ -132,7 +132,7 @@ class fingerchain:
         self.projectors = []
     
     def setup(self):    # Setup: calls the functions to create projectors, 
-			# put IK constraints between phalanges and
+            # put IK constraints between phalanges and
                         # those projectors, and create control bone
         print("Setting up finger " + self.name)
         self.create_projectors()    
@@ -255,11 +255,11 @@ class fingerchain:
             editchain.append(namematch)
             
         """
-	print("full editbones chain: ")
+    print("full editbones chain: ")
         for printbone in editchain[:]:
             print(printbone.name, end=' ')
         print()
-	"""
+    """
         
         #print("looping projector creation")
         for phalange in editchain[:]:
@@ -378,8 +378,8 @@ class fingerchain:
     def clean_layers(self):
         
         # Moves all the project bones and the control bone to designated layers.
-	# You'd expect this to take an input, but I defined that out in 
-	# set_armature_layers instead. May rearrange that for some clarity
+    # You'd expect this to take an input, but I defined that out in 
+    # set_armature_layers instead. May rearrange that for some clarity
         
         for joint in self.projectors:
             i = 0
@@ -579,50 +579,53 @@ def assemble_hand(handbone):
     # merge more of these into one function
     
     for loop_palm in fingerroots:
-        print()
-        bonechain = []
-        
-        nameslist = chosen_dictionary[loop_palm.name]
-        
-        for j in nameslist:
-            print(j, end=', ')
-            bonechain.append(obj.pose.bones[j])
+        try:
+            print()
+            bonechain = []
             
-        if rig_choice == 'ARP':
-            rootname = loop_palm.name
-            fingername = rootname.split('_')[1]
-            fingername = fingername[:-1]
-        else:
-            fingername = bonechain[0].basename
-            
-        
-        if 'thumb' in fingername:
-            if rig_choice == 'MHX':
-                if bonechain[0].name == "thumb.02.L":
-                    print("\nCREATING LEFT MAKEHUMAN THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, 0.8)
-                elif bonechain[0].name ==  "thumb.02.R":
-                    print("\nCREATING RIGHT MAKEHUMAN THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, -0.8)
-            elif rig_choice == 'RFY':
-                if bonechain[0].name == "thumb.02.L":
-                    print("\nCREATING LEFT RIGIFY THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, -0.7)
-                elif bonechain[0].name ==  "thumb.02.R":
-                    print("\nCREATING RIGHT RIGIFY THUMB")
-                    newfinger = fingerchain(bonechain, 'z', fingername, 0.7)
-            elif rig_choice == 'ARP':
-                print("\nCREATING AUTORIG THUMB")
-                newfinger = fingerchain(bonechain, '-z', fingername)
+            nameslist = chosen_dictionary[loop_palm.name]
+
+            for j in nameslist:
+                print(j, end=', ')
+                bonechain.append(obj.pose.bones[j])
                 
-        else:
-            print("creating other finger")
             if rig_choice == 'ARP':
-                newfinger = fingerchain(bonechain, '-z', fingername)
+                rootname = loop_palm.name
+                fingername = rootname.split('_')[1]
+                fingername = fingername[:-1]
             else:
-                newfinger = fingerchain(bonechain, 'z', fingername)
-        
-        fingerlist.append(newfinger)
+                fingername = bonechain[0].basename
+                
+            
+            if 'thumb' in fingername:
+                if rig_choice == 'MHX':
+                    if bonechain[0].name == "thumb.02.L":
+                        print("\nCREATING LEFT MAKEHUMAN THUMB")
+                        newfinger = fingerchain(bonechain, 'z', fingername, 0.8)
+                    elif bonechain[0].name ==  "thumb.02.R":
+                        print("\nCREATING RIGHT MAKEHUMAN THUMB")
+                        newfinger = fingerchain(bonechain, 'z', fingername, -0.8)
+                elif rig_choice == 'RFY':
+                    if bonechain[0].name == "thumb.02.L":
+                        print("\nCREATING LEFT RIGIFY THUMB")
+                        newfinger = fingerchain(bonechain, 'z', fingername, -0.7)
+                    elif bonechain[0].name ==  "thumb.02.R":
+                        print("\nCREATING RIGHT RIGIFY THUMB")
+                        newfinger = fingerchain(bonechain, 'z', fingername, 0.7)
+                elif rig_choice == 'ARP':
+                    print("\nCREATING AUTORIG THUMB")
+                    newfinger = fingerchain(bonechain, '-z', fingername)
+                    
+            else:
+                print("creating other finger")
+                if rig_choice == 'ARP':
+                    newfinger = fingerchain(bonechain, '-z', fingername)
+                else:
+                    newfinger = fingerchain(bonechain, 'z', fingername)
+            
+            fingerlist.append(newfinger)
+        except:
+            print("\n",aloop_palm.name, "FINGER NOT FOUND.")
         
     return fingerlist
 
@@ -724,10 +727,10 @@ def setup_hand(targetroot):
         control_drivers(finger)
         finger.set_armature_layers()
 
-class AutoGrippySetup(bpy.types.Operator):
-    """Set up AutoGrippy rig"""
-    bl_idname = "object.autogrippy_setup"
-    bl_label = "AutoGrippy Setup"
+class AutoGripSetup(bpy.types.Operator):
+    """Set up AutoGrip rig"""
+    bl_idname = "object.autogrip_setup"
+    bl_label = "AutoGrip Setup"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -770,9 +773,9 @@ class AutoGrippySetup(bpy.types.Operator):
         return {'FINISHED'}
             
             
-class AutoGrippyLeft(bpy.types.Operator):
-    """Set up AutoGrippy rig for left hand only"""
-    bl_idname = "object.autogrippy_setup_left"
+class AutoGripLeft(bpy.types.Operator):
+    """Set up AutoGrip rig for left hand only"""
+    bl_idname = "object.autogrip_setup_left"
     bl_label = "Setup Left"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -805,9 +808,9 @@ class AutoGrippyLeft(bpy.types.Operator):
     
 
             
-class AutoGrippyRight(bpy.types.Operator):
-    """Set up AutoGrippy rig for right hand only"""
-    bl_idname = "object.autogrippy_setup_right"
+class AutoGripRight(bpy.types.Operator):
+    """Set up AutoGrip rig for right hand only"""
+    bl_idname = "object.autogrip_setup_right"
     bl_label = "Setup Right"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -837,7 +840,7 @@ class AutoGrippyRight(bpy.types.Operator):
             
 class TargetLeft(bpy.types.Operator):
     """Set Grip Target for left hand"""
-    bl_idname = "object.autogrippy_target_l"
+    bl_idname = "object.autogrip_target_l"
     bl_label = "Grip Target L"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -874,7 +877,7 @@ class TargetLeft(bpy.types.Operator):
     
 class TargetRight(bpy.types.Operator):
     """Set Grip Target for right hand"""
-    bl_idname = "object.autogrippy_target_r"
+    bl_idname = "object.autogrip_target_r"
     bl_label = "Grip Target R"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -971,8 +974,8 @@ def reset_hand(wristroot):
     bpy.ops.object.mode_set(mode='OBJECT', toggle=False)       
     
 class ResetHandLeft(bpy.types.Operator):
-    """Reset all autogrippy stuff on left hand"""
-    bl_idname = "object.autogrippy_reset_l"
+    """Reset all autogrip stuff on left hand"""
+    bl_idname = "object.autogrip_reset_l"
     bl_label = "Reset Hand L"
     bl_options = {'REGISTER', 'UNDO'}
     
@@ -997,8 +1000,8 @@ class ResetHandLeft(bpy.types.Operator):
         return {'FINISHED'}
     
 class ResetHandRight(bpy.types.Operator):
-    """Reset all autogrippy stuff on right hand"""
-    bl_idname = "object.autogrippy_reset_r"
+    """Reset all autogrip stuff on right hand"""
+    bl_idname = "object.autogrip_reset_r"
     bl_label = "Reset Hand R"
     bl_options = {'REGISTER', 'UNDO'}
     
@@ -1025,7 +1028,7 @@ class ResetHandRight(bpy.types.Operator):
     
 class QuickPose(bpy.types.Operator):
     """Quickly put all control bones to active position"""
-    bl_idname = "object.autogrippy_quickpose"
+    bl_idname = "object.autogrip_quickpose"
     bl_label = "Quick Pose"
     bl_options = {'REGISTER', 'UNDO'}
     
@@ -1174,7 +1177,7 @@ def bone_in_armature(key):  # This function is used only for rig guessing.
 class guess_rig_type(bpy.types.Operator):
     """Check if rig is compatible with any of the precoded types."""
     
-    bl_idname = "object.autogrippy_guess_rig"
+    bl_idname = "object.autogrip_guess_rig"
     bl_label = "Guess Rig Type"
     bl_options = {'REGISTER', 'UNDO'}
     
@@ -1226,10 +1229,10 @@ class guess_rig_type(bpy.types.Operator):
         
 class PANEL_PT_Autogrip(bpy.types.Panel):
     """Creates a sub tab in the N-panel"""
-    bl_label = "AutoGrippy Tools"
+    bl_label = "AutoGrip Tools"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "AutoGrippy"
+    bl_category = "AutoGrip"
     #bl_context = "objectmode"
     
     def draw(self, context):
@@ -1265,11 +1268,11 @@ class PANEL_PT_Autogrip(bpy.types.Panel):
             row = layout.row()
             
             row = layout.row()
-            row.operator(AutoGrippySetup.bl_idname)
+            row.operator(AutoGripSetup.bl_idname)
             
             setuprow = layout.row()
-            setupright = setuprow.operator(AutoGrippyRight.bl_idname)
-            setupleft = setuprow.operator(AutoGrippyLeft.bl_idname)
+            setupright = setuprow.operator(AutoGripRight.bl_idname)
+            setupleft = setuprow.operator(AutoGripLeft.bl_idname)
             
             QProw = layout.row()
             QProw.operator(QuickPose.bl_idname)
@@ -1297,7 +1300,7 @@ class PANEL_PT_Autogrip(bpy.types.Panel):
             row.operator(kofi_link.bl_idname)
                        
         
-classes = [AutoGrippySetup, AutoGrippyLeft, AutoGrippyRight, TargetRight, TargetLeft,
+classes = [AutoGripSetup, AutoGripLeft, AutoGripRight, TargetRight, TargetLeft,
     ResetHandLeft, ResetHandRight, QuickPose, PANEL_PT_Autogrip, github_link, guess_rig_type,
     kofi_link]        
         
