@@ -6,8 +6,8 @@
 bl_info = {
     "name": "Autogrip",
     "author": "Jetpack Crow",
-    "version": (1, 2),
-    "blender": (3, 4, 00),
+    "version": (1, 21),
+    "blender": (3, 4, 1),
     "location": "View3D > Extended Tools > AutoGrip",
     "description": "Automatically poses hand rigs",
     "category": '3D View'}

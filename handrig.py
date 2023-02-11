@@ -736,7 +736,6 @@ class AutoGripSetup(bpy.types.Operator):
     def execute(self, context):
         print("\n~~~~~~~~~~~START~~~~~~~~~~~~\n")
 
-        scene = context.scene
         global obj 
         obj = bpy.context.active_object
         
@@ -782,7 +781,6 @@ class AutoGripLeft(bpy.types.Operator):
     def execute(self, context):
         print("\n~~~~~~~~~~~START~~~~~~~~~~~~\n")
         
-        scene = context.scene
         global obj 
         obj = bpy.context.active_object
         
@@ -817,7 +815,6 @@ class AutoGripRight(bpy.types.Operator):
     def execute(self, context):
         print("\n~~~~~~~~~~~START~~~~~~~~~~~~\n")
         
-        scene = context.scene
         global obj 
         obj = bpy.context.active_object
         
@@ -848,7 +845,6 @@ class TargetLeft(bpy.types.Operator):
         
         #print(obj.name)
         
-        scene = context.scene
         global obj 
         obj = bpy.context.active_object
         
@@ -885,7 +881,6 @@ class TargetRight(bpy.types.Operator):
         
         #print(obj.name)
         
-        scene = context.scene
         global obj 
         obj = bpy.context.active_object
         
@@ -915,7 +910,6 @@ class TargetRight(bpy.types.Operator):
 
 def reset_hand(wristroot):
     
-    scene = context.scene
     global obj 
     obj = bpy.context.active_object
     
@@ -982,7 +976,6 @@ class ResetHandLeft(bpy.types.Operator):
     def execute(self, context):
         print("resetting left hand")
         
-        scene = context.scene
         global obj 
         obj = bpy.context.active_object
         
@@ -1008,7 +1001,6 @@ class ResetHandRight(bpy.types.Operator):
     def execute(self, context):
         print("resetting right hand")
         
-        scene = context.scene
         global obj 
         obj = bpy.context.active_object
         
@@ -1051,7 +1043,6 @@ class QuickPose(bpy.types.Operator):
         
         pi = 3.14159
         
-        scene = context.scene
         global obj
         obj = bpy.context.active_object
         
@@ -1183,7 +1174,6 @@ class guess_rig_type(bpy.types.Operator):
     
     def execute(self, context):
         
-        scene = context.scene
         global obj
         obj = bpy.context.active_object
         global activeArmature
@@ -1239,16 +1229,31 @@ class PANEL_PT_Autogrip(bpy.types.Panel):
         global obj
         obj = context.active_object 
         
-        global activeArmature
-        activeArmature = obj.data
-        
-        target = None
-        for t in bpy.context.selected_objects:
-            if t != obj and type(t.data) is bpy.types.Mesh:
-                target = t
-                break
-        
         layout = self.layout
+        
+        global activeArmature
+        
+        try:
+            activeArmature = obj.data
+                
+            target = None
+            for t in bpy.context.selected_objects:
+                if t != obj and type(t.data) is bpy.types.Mesh:
+                    target = t
+                    break
+            
+
+        except:
+            row = layout.row()
+            row.label(text="No active object.")
+            
+            row = layout.row()
+            row.label(text="Links (Open in browser)")
+            
+            row = layout.row()
+            row.operator(github_link.bl_idname)
+            row.operator(kofi_link.bl_idname)
+
         
         """Provide setup options only if armature selected, provide target options only
         if there is a valid target to attach them to."""
@@ -1290,14 +1295,17 @@ class PANEL_PT_Autogrip(bpy.types.Panel):
                 row.operator(TargetLeft.bl_idname)
         else:
             row = layout.row()
-            row.label(text = "No armature active.")   
+            row.label(text = "Active object is not armature.")   
+        
             
-            row = layout.row()
-            row.label(text="Links (Open in browser)")
-            
-            row = layout.row()
-            row.operator(github_link.bl_idname)
-            row.operator(kofi_link.bl_idname)
+        row = layout.row()
+        row = layout.row()
+        row.label(text="Links (Open in browser)")
+        
+        row = layout.row()
+        row.operator(github_link.bl_idname)
+        row.operator(kofi_link.bl_idname)
+
                        
         
 classes = [AutoGripSetup, AutoGripLeft, AutoGripRight, TargetRight, TargetLeft,
