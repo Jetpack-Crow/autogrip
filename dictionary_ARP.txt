@@ -1,0 +1,13 @@
+{
+    'c_index1_base.l': ['c_index1.l', 'c_index2.l', 'c_index3.l'],        
+    'c_middle1_base.l': ['c_middle1.l', 'c_middle2.l', 'c_middle3.l'],        
+    'c_ring1_base.l': ['c_ring1.l', 'c_ring2.l', 'c_ring3.l'],
+    'c_pinky1_base.l': ['c_pinky1.l', 'c_pinky2.l', 'c_pinky3.l'],        
+    'c_thumb1.l': ['c_thumb2.l', 'c_thumb3.l'],
+        
+    'c_index1_base.r': ['c_index1.r', 'c_index2.r', 'c_index3.r'],
+    'c_middle1_base.r': ['c_middle1.r', 'c_middle2.r', 'c_middle3.r'],    
+    'c_ring1_base.r': ['c_ring1.r', 'c_ring2.r', 'c_ring3.r'],        
+    'c_pinky1_base.r': ['c_pinky1.r', 'c_pinky2.r', 'c_pinky3.r'],
+    'c_thumb1.r': ['c_thumb2.r', 'c_thumb3.r'],
+}
